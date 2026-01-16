@@ -1,42 +1,48 @@
 import { useEffect, useState } from "react";
-import {
-  getProducts,
-  getOrders,
-  getNotifications
-} from "../services/api";
+import { getOrders } from "../services/api";
 
-import SummaryCard from "../Components/SummaryCard";
-import NotificationItem from "../Components/NotificationItem";
-
-function Dashboard() {
-  const [products, setProducts] = useState([]);
+const Dashboard = () => {
   const [orders, setOrders] = useState([]);
-  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    getProducts().then(setProducts);
     getOrders().then(setOrders);
-    getNotifications().then(setNotifications);
   }, []);
 
-  const lowStockCount = products.filter(p => p.stock < 5).length;
-
   return (
-    <div className="container">
+    <div className="page">
       <h2>Dashboard</h2>
 
-      <div className="cards">
-        <SummaryCard title="Total Products" value={products.length} />
-        <SummaryCard title="Low Stock" value={lowStockCount} />
-        <SummaryCard title="Total Orders" value={orders.length} />
-      </div>
+      <table border="1" cellPadding="10" cellSpacing="0" width="100%">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer Name</th>
+            <th>Total Price</th>
+            <th>Status</th>
+          </tr>
+        </thead>
 
-      <h3>Notifications</h3>
-      {notifications.map(n => (
-        <NotificationItem key={n.id} notification={n} />
-      ))}
+        <tbody>
+          {orders.length === 0 && (
+            <tr>
+              <td colSpan="4" style={{ textAlign: "center" }}>
+                No orders yet
+              </td>
+            </tr>
+          )}
+
+          {orders.map((order) => (
+            <tr key={order.id}>
+              <td>{order.id}</td>
+              <td>{order.customerName}</td>
+              <td>${order.totalPrice.toFixed(2)}</td>
+              <td>{order.status}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
-}
+};
 
 export default Dashboard;

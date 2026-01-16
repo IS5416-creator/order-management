@@ -1,5 +1,11 @@
 [
   {
+    "id": 1768563714505,
+    "message": "Order placed for 2 black jacket",
+    "type": "success",
+    "time": "2026-01-16T11:41:54.505Z"
+  },
+  {
     "id": 1768550164089,
     "message": "Product \"black jacket\" created",
     "type": "info",
