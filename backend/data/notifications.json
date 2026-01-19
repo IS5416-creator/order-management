@@ -1,5 +1,35 @@
 [
   {
+    "id": 1768818616498,
+    "message": "Order placed for 2 T-Shirt",
+    "type": "success",
+    "time": "2026-01-19T10:30:16.498Z"
+  },
+  {
+    "id": 1768816514294,
+    "message": "Low stock alert for T-Shirt",
+    "type": "warning",
+    "time": "2026-01-19T09:55:14.293Z"
+  },
+  {
+    "id": 1768816514293,
+    "message": "Order placed for 1 T-Shirt",
+    "type": "success",
+    "time": "2026-01-19T09:55:14.293Z"
+  },
+  {
+    "id": 1768816253505,
+    "message": "Low stock alert for T-Shirt",
+    "type": "warning",
+    "time": "2026-01-19T09:50:53.504Z"
+  },
+  {
+    "id": 1768816253504,
+    "message": "Order placed for 1 T-Shirt",
+    "type": "success",
+    "time": "2026-01-19T09:50:53.504Z"
+  },
+  {
     "id": 1768550164089,
     "message": "Product \"black jacket\" created",
     "type": "info",

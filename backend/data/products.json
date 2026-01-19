@@ -1,8 +1,29 @@
 [
   {
-    "id": 1768550164086,
-    "name": "black jacket",
-    "price": "800",
-    "stock": "7"
+    "id": 1,
+    "name": "T-Shirt",
+    "category": "Regular",
+    "size": "M",
+    "color": "Blue",
+    "price": 500,
+    "stock": 23
+  },
+  {
+    "id": 2,
+    "name": "Jacket",
+    "category": "Apparel",
+    "size": "L",
+    "color": "Black",
+    "price": 550,
+    "stock": 10
+  },
+  {
+    "id": 3,
+    "name": "Jeans",
+    "category": "Regular",
+    "size": "32",
+    "color": "Blue",
+    "price": 850,
+    "stock": 15
   }
 ]
