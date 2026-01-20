@@ -42,8 +42,8 @@ function Sidebar() {
         </Link>
         
         <Link 
-          to="/create-product" 
-          className={`nav-link ${isActive("/create-product") ? "active" : ""}`}
+          to="/create" 
+          className={`nav-link ${isActive("/create") ? "active" : ""}`}
         >
           <span className="nav-icon">➕</span>
           <span className="nav-label">Create Product</span>

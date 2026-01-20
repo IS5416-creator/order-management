@@ -14,6 +14,7 @@
     "productId": 1,
     "productName": "T-Shirt",
     "quantity": 1,
+    "total":1000,
     "date": "2026-01-19T09:55:14.291Z",
     "status": "Cancelled"
   },
@@ -21,7 +22,8 @@
     "id": 1768816253477,
     "productId": 1,
     "productName": "T-Shirt",
-    "quantity": 1,
+    "total": 1,
+    "totalPrice":1000,
     "date": "2026-01-19T09:50:53.477Z",
     "status": "Completed"
   },
