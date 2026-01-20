@@ -13,7 +13,7 @@ function Sidebar() {
     <div className="sidebar">
       <div className="logo">
         <span className="logo-icon">🛒</span>
-        <span className="logo-text">OMS</span>
+        <span className="logo-text">Inventory</span>
       </div>
       
       <div className="nav-menu">
@@ -64,6 +64,7 @@ function Sidebar() {
         <div className="notification-badge">
           <span className="bell-icon">🔔</span>
           <span className="notification-count">3</span>
+          
         </div>
         <div className="user-info">
           <div className="user-avatar">👤</div>
