@@ -25,5 +25,11 @@
     "color": "Blue",
     "price": 850,
     "stock": 15
+  },
+  {
+    "id": 1768989922746,
+    "name": "White Shirt",
+    "price": "800",
+    "stock": "10"
   }
 ]
