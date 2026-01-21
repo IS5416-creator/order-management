@@ -35,7 +35,7 @@ const Dashboard = () => {
             <tr key={order.id}>
               <td>{order.id}</td>
               <td>{order.customerName}</td>
-              <td>${order.total.toFixed(2)}</td>
+              <td>{order.total.toFixed(2)}ETB</td>
               <td>{order.status}</td>
             </tr>
           ))}

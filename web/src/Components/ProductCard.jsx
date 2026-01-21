@@ -2,7 +2,7 @@ function ProductCard({ product }) {
   return (
     <div className="card">
       <h3>{product.name}</h3>
-      <p>Price: ${product.price}</p>
+      <p>Price: {product.price}ETB</p>
       <p>Stock: {product.stock}</p>
 
       {product.stock < 5 && (

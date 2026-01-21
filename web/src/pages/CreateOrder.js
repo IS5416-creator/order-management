@@ -481,7 +481,7 @@ const safeFormatPrice = (price) => {
               </div>
               <div className="summary-row">
                 <span>Unit Price:</span>
-                <span>${selectedProduct ? safeFormatPrice(selectedProduct.price) : "0.00"}</span>
+                <span>{selectedProduct ? safeFormatPrice(selectedProduct.price) : "0.00"}ETB</span>
               </div>
               <div className="summary-row">
                 <span>Quantity:</span>
@@ -492,7 +492,7 @@ const safeFormatPrice = (price) => {
                   <strong>Total Price:</strong>
                 </span>
                 <span>
-                  <strong>${calculateTotal().toFixed(2)}</strong>
+                  <strong>{calculateTotal().toFixed(2)}ETB</strong>
                 </span>
               </div>
             </div>
