@@ -1,5 +1,11 @@
 [
   {
+    "id": 1769001888084,
+    "message": "Order placed for 1 White Shirt",
+    "type": "success",
+    "time": "2026-01-21T13:24:48.084Z"
+  },
+  {
     "id": 1768989922747,
     "message": "Product \"White Shirt\" created",
     "type": "info",
