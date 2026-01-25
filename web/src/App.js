@@ -4,11 +4,10 @@ import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import CreateProduct from "./pages/CreateProduct";
 import Orders from "./pages/Orders";
-// Add this import
 import CreateOrder from "./pages/CreateOrder";
 import Sidebar from "./Components/Sidebar";
+import NotificationsPage from "./pages/NotificationsPage";
 
-// Add this route inside your <Routes> component
 
 
 function App() {
@@ -24,8 +23,10 @@ function App() {
             <Route path="/create" element={<CreateProduct />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/create-order" element={<CreateOrder />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
           </Routes>
         </div>
+        
       </div>
     </BrowserRouter>
   );

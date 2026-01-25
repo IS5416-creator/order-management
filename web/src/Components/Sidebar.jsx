@@ -4,7 +4,6 @@ import "../styles/main.css";
 function Sidebar() {
   const location = useLocation();
   
-  // Check if current path matches link
   const isActive = (path) => {
     return location.pathname === path;
   };
@@ -49,7 +48,6 @@ function Sidebar() {
           <span className="nav-label">Create Product</span>
         </Link>
         
-        {/* Create Order Button - Highlighted */}
         <Link 
           to="/create-order" 
           className="create-order-btn"
@@ -59,13 +57,14 @@ function Sidebar() {
         </Link>
       </div>
       
-      {/* Optional: Notifications or User Info */}
       <div className="sidebar-footer">
-        <div className="notification-badge">
+        <Link 
+          to="/notifications" 
+          className={`notification-badge ${isActive("/notifications") ? "active" : ""}`}
+        >
           <span className="bell-icon">🔔</span>
           <span className="notification-count">3</span>
-          
-        </div>
+        </Link>
         <div className="user-info">
           <div className="user-avatar">👤</div>
           <div className="user-details">

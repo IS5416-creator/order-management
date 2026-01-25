@@ -1,15 +1,20 @@
-function ProductCard({ product }) {
+function ProductCard({ product, onDelete }) {
+  const { name, price, stock, category } = product;
+  
+  const stockStatus = stock <= 0 ? "out" : stock < 5 ? "low" : "normal";
+  
   return (
-    <div className="card">
-      <h3>{product.name}</h3>
-      <p>Price: {product.price}ETB</p>
-      <p>Stock: {product.stock}</p>
-
-      {product.stock < 5 && (
-        <p className="low-stock">LOW STOCK</p>
+    <div className={`product-card ${stockStatus}`}>
+      <h3>{name}</h3>
+      {category && <span className="category">{category}</span>}
+      <p><strong>Price:</strong> {parseFloat(price || 0).toFixed(2)} ETB</p>
+      <p><strong>Stock:</strong> {stock} units</p>
+      {onDelete && (
+        <button onClick={() => onDelete(product.id, product.name)}>
+          Delete
+        </button>
       )}
     </div>
   );
 }
-
 export default ProductCard;
