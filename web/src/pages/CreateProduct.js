@@ -84,7 +84,7 @@ function CreateProduct() {
           <label style={{ display: 'block', marginBottom: '5px' }}>Product Name *</label>
           <input
             name="name"
-            placeholder="e.g., Wireless Mouse"
+            placeholder=""
             value={form.name}
             onChange={handleChange}
             style={{ width: '100%', padding: '8px' }}
@@ -98,7 +98,7 @@ function CreateProduct() {
           <input
             name="price"
             type="number"
-            placeholder="e.g., 29.99"
+            placeholder=""
             value={form.price}
             onChange={handleChange}
             style={{ width: '100%', padding: '8px' }}
@@ -113,7 +113,7 @@ function CreateProduct() {
           <label style={{ display: 'block', marginBottom: '5px' }}>Category</label>
           <input
             name="category"
-            placeholder="e.g., Electronics, Stationery"
+            placeholder=""
             value={form.category}
             onChange={handleChange}
             style={{ width: '100%', padding: '8px' }}
@@ -126,7 +126,7 @@ function CreateProduct() {
           <input
             name="stock"
             type="number"
-            placeholder="e.g., 100"
+            placeholder=""
             value={form.stock}
             onChange={handleChange}
             style={{ width: '100%', padding: '8px' }}
@@ -155,15 +155,7 @@ function CreateProduct() {
         )}
       </form>
 
-      <div style={{ marginTop: '30px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
-        <h4>Notes:</h4>
-        <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
-          <li>Fields marked with * are required</li>
-          <li>Price should be in ETB (Ethiopian Birr)</li>
-          <li>Stock will default to 0 if left empty</li>
-          <li>Make sure backend server is running on port 3000</li>
-        </ul>
-      </div>
+      
     </div>
   );
 }

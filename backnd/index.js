@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = 5000;
-const uri = "mongodb+srv://israel:israel@cluster0.yyptkvj.mongodb.net/?appName=Cluster0";
+const uri = "mongodb+srv://israel:israel@cluster0.yyptkvj.mongodb.net/order_management?appName=Cluster0";
 const DB_NAME = 'order_management';
 
 let db;
