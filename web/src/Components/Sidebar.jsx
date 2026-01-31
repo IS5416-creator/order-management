@@ -58,13 +58,7 @@ function Sidebar() {
       </div>
       
       <div className="sidebar-footer">
-        <Link 
-          to="/notifications" 
-          className={`notification-badge ${isActive("/notifications") ? "active" : ""}`}
-        >
-          <span className="bell-icon">🔔</span>
-          <span className="notification-count">3</span>
-        </Link>
+        
         <div className="user-info">
           <div className="user-avatar">👤</div>
           <div className="user-details">

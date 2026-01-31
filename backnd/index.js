@@ -1,6 +1,8 @@
 const express = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
+const bcrypt = require('bcryptjs');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(cors());
@@ -25,6 +27,7 @@ async function connectToDB() {
     if (!names.includes("orders")) await db.createCollection("orders");
     if (!names.includes("products")) await db.createCollection("products");
     if (!names.includes("customers")) await db.createCollection("customers");
+    if (!names.includes("notifications")) await db.createCollection("notification");
 
     if (typeof initializeSampleData === "function") {
       await initializeSampleData();
@@ -557,29 +560,8 @@ app.get('/api/stats', async (req, res) => {
 
 // ==================== START SERVER ====================
 connectToDB().then(() => {
-    app.listen(PORT, () => {
+    app.listen(5000, () => {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
-        console.log('📚 Available endpoints:');
-        console.log('   GET    /api/products');
-        console.log('   POST   /api/products');
-        console.log('   GET    /api/products/:id');
-        console.log('   PUT    /api/products/:id');
-        console.log('   DELETE /api/products/:id');
-        console.log('');
-        console.log('   GET    /api/orders');
-        console.log('   POST   /api/orders');
-        console.log('   GET    /api/orders/:id');
-        console.log('   PUT    /api/orders/:id');
-        console.log('   DELETE /api/orders/:id');
-        console.log('');
-        console.log('   GET    /api/customers');
-        console.log('   POST   /api/customers');
-        console.log('   GET    /api/customers/:id');
-        console.log('   PUT    /api/customers/:id');
-        console.log('   DELETE /api/customers/:id');
-        console.log('');
-        console.log('   GET    /api/orders/search?q=query');
-        console.log('   GET    /api/stats');
     });
 });
 

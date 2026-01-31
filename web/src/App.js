@@ -6,7 +6,6 @@ import CreateProduct from "./pages/CreateProduct";
 import Orders from "./pages/Orders";
 import CreateOrder from "./pages/CreateOrder";
 import Sidebar from "./Components/Sidebar";
-import NotificationsPage from "./pages/NotificationsPage";
 
 
 
@@ -23,7 +22,6 @@ function App() {
             <Route path="/create" element={<CreateProduct />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/create-order" element={<CreateOrder />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
           </Routes>
         </div>
         
