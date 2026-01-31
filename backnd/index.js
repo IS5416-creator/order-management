@@ -9,6 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = 5000;
+const JWT_SECRET = 'your-super-secret-jwt-key-here'; // Change this in production
 const uri = "mongodb+srv://israel:israel@cluster0.yyptkvj.mongodb.net/order_management?appName=Cluster0";
 const DB_NAME = 'order_management';
 
@@ -17,30 +18,39 @@ let db;
 async function connectToDB() {
     try {
         const client = await MongoClient.connect(uri);
-
         db = client.db(DB_NAME);
         console.log('✅ Connected to MongoDB');
         
-      const collections = await db.listCollections().toArray();
-    const names = collections.map(c => c.name);
+        const collections = await db.listCollections().toArray();
+        const names = collections.map(c => c.name);
 
-    if (!names.includes("orders")) await db.createCollection("orders");
-    if (!names.includes("products")) await db.createCollection("products");
-    if (!names.includes("customers")) await db.createCollection("customers");
-    if (!names.includes("notifications")) await db.createCollection("notification");
+        if (!names.includes("orders")) await db.createCollection("orders");
+        if (!names.includes("products")) await db.createCollection("products");
+        if (!names.includes("customers")) await db.createCollection("customers");
+        if (!names.includes("users")) await db.createCollection("users");
+        if (!names.includes("notifications")) await db.createCollection("notification");
 
-    if (typeof initializeSampleData === "function") {
-      await initializeSampleData();
-    }
-
-  } catch (error) {
+        await initializeSampleData();
+    } catch (error) {
         console.error('❌ MongoDB connection error:', error);
         process.exit(1);
     }
 }
 
-
 async function initializeSampleData() {
+    // Check and create admin user if doesn't exist
+    const adminExists = await db.collection('users').findOne({ email: 'admin@example.com' });
+    if (!adminExists) {
+        const hashedPassword = await bcrypt.hash('admin123', 10);
+        await db.collection('users').insertOne({
+            name: 'Admin',
+            email: 'admin@example.com',
+            password: hashedPassword,
+            createdAt: new Date()
+        });
+        console.log('👑 Created admin user');
+    }
+
     const productsCount = await db.collection('products').countDocuments();
     if (productsCount === 0) {
         await db.collection('products').insertMany([
@@ -64,8 +74,184 @@ async function initializeSampleData() {
     }
 }
 
+// ==============================================
+// AUTHENTICATION MIDDLEWARE
+// ==============================================
+const auth = async (req, res, next) => {
+    try {
+        // 1. Get token from Authorization header
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        
+        // 2. Check if token exists
+        if (!token) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'No authentication token, access denied' 
+            });
+        }
+        
+        // 3. Verify the token
+        const decoded = jwt.verify(token, JWT_SECRET);
+        
+        // 4. Find user by ID from token
+        const user = await db.collection('users').findOne({ 
+            _id: new ObjectId(decoded.userId) 
+        });
+        
+        if (!user) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'User not found' 
+            });
+        }
+        
+        // 5. Remove password from user object
+        delete user.password;
+        
+        // 6. Attach user to request object
+        req.user = user;
+        req.token = token;
+        
+        // 7. Continue to the route
+        next();
+    } catch (error) {
+        console.error('Auth middleware error:', error);
+        res.status(401).json({ 
+            success: false, 
+            message: 'Token is not valid' 
+        });
+    }
+};
+
+// ==================== AUTHENTICATION API ====================
+// Register new admin user
+app.post('/api/auth/register', async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+        
+        // Validate input
+        if (!name || !email || !password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Name, email, and password are required' 
+            });
+        }
+        
+        // Check if user already exists
+        const existingUser = await db.collection('users').findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'User already exists' 
+            });
+        }
+        
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Create user (all users are admins)
+        const user = {
+            name,
+            email,
+            password: hashedPassword,
+            createdAt: new Date()
+        };
+        
+        const result = await db.collection('users').insertOne(user);
+        user._id = result.insertedId;
+        
+        // Create token
+        const token = jwt.sign(
+            { userId: user._id.toString(), email: user.email },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+        
+        // Remove password from response
+        delete user.password;
+        
+        res.status(201).json({
+            success: true,
+            message: 'Admin user registered successfully',
+            token,
+            user
+        });
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error during registration' 
+        });
+    }
+});
+
+// Login admin user
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        // Validate input
+        if (!email || !password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Email and password are required' 
+            });
+        }
+        
+        // Find user
+        const user = await db.collection('users').findOne({ email });
+        if (!user) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid credentials' 
+            });
+        }
+        
+        // Check password
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid credentials' 
+            });
+        }
+        
+        // Create token
+        const token = jwt.sign(
+            { userId: user._id.toString(), email: user.email },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+        
+        // Remove password from response
+        const userWithoutPassword = { ...user };
+        delete userWithoutPassword.password;
+        
+        res.json({
+            success: true,
+            message: 'Login successful',
+            token,
+            user: userWithoutPassword
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error during login' 
+        });
+    }
+});
+
+// Get user profile (protected)
+app.get('/api/auth/profile', auth, async (req, res) => {
+    res.json({
+        success: true,
+        user: req.user
+    });
+});
+
 // ==================== PRODUCTS API ====================
-app.get('/api/products', async (req, res) => {
+app.get('/api/products', auth, async (req, res) => {
     try {
         const products = await db.collection('products').find({}).toArray();
         res.json({ success: true, data: products });
@@ -74,7 +260,7 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
-app.get('/api/products/:id', async (req, res) => {
+app.get('/api/products/:id', auth, async (req, res) => {
     try {
         const product = await db.collection('products').findOne({
             _id: new ObjectId(req.params.id)
@@ -90,7 +276,7 @@ app.get('/api/products/:id', async (req, res) => {
     }
 });
 
-app.post('/api/products', async (req, res) => {
+app.post('/api/products', auth, async (req, res) => {
     try {
         const { name, price, category, stock } = req.body;
         
@@ -106,7 +292,8 @@ app.post('/api/products', async (req, res) => {
             price: parseFloat(price),
             category: category || '',
             stock: parseInt(stock) || 0,
-            createdAt: new Date()
+            createdAt: new Date(),
+            createdBy: req.user._id
         };
         
         const result = await db.collection('products').insertOne(product);
@@ -122,7 +309,7 @@ app.post('/api/products', async (req, res) => {
     }
 });
 
-app.put('/api/products/:id', async (req, res) => {
+app.put('/api/products/:id', auth, async (req, res) => {
     try {
         const { name, price, category, stock } = req.body;
         const updateData = {};
@@ -156,7 +343,7 @@ app.put('/api/products/:id', async (req, res) => {
     }
 });
 
-app.delete('/api/products/:id', async (req, res) => {
+app.delete('/api/products/:id', auth, async (req, res) => {
     try {
         const result = await db.collection('products').deleteOne({
             _id: new ObjectId(req.params.id)
@@ -179,19 +366,26 @@ app.delete('/api/products/:id', async (req, res) => {
 });
 
 // ==================== ORDERS API ====================
-app.get('/api/orders', async (req, res) => {
+app.get('/api/orders', auth, async (req, res) => {
     try {
         const orders = await db.collection('orders')
             .find({})
             .sort({ orderNumber: -1 })
             .toArray();
-        res.json({ success: true, data: orders });
+            
+        // Transform _id to id for frontend compatibility
+        const transformedOrders = orders.map(order => ({
+            ...order,
+            id: order._id
+        }));
+        
+        res.json({ success: true, data: transformedOrders });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.get('/api/orders/:id', async (req, res) => {
+app.get('/api/orders/:id', auth, async (req, res) => {
     try {
         const order = await db.collection('orders').findOne({
             _id: new ObjectId(req.params.id)
@@ -201,13 +395,16 @@ app.get('/api/orders/:id', async (req, res) => {
             return res.status(404).json({ success: false, error: 'Order not found' });
         }
         
+        // Add id field for frontend
+        order.id = order._id;
+        
         res.json({ success: true, data: order });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.post('/api/orders', async (req, res) => {
+app.post('/api/orders', auth, async (req, res) => {
     try {
         const { customerName, items, customerId } = req.body;
         
@@ -269,13 +466,14 @@ app.post('/api/orders', async (req, res) => {
             total,
             status: 'pending',
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
+            createdBy: req.user._id
         };
         
-        // Start transaction-like process
         // 1. Insert order
         const result = await db.collection('orders').insertOne(order);
         order._id = result.insertedId;
+        order.id = order._id;
         
         // 2. Update product stock
         for (const item of items) {
@@ -295,7 +493,7 @@ app.post('/api/orders', async (req, res) => {
     }
 });
 
-app.put('/api/orders/:id', async (req, res) => {
+app.put('/api/orders/:id/status', auth, async (req, res) => {
     try {
         const { status } = req.body;
         
@@ -324,6 +522,9 @@ app.put('/api/orders/:id', async (req, res) => {
             });
         }
         
+        // Add id field for frontend
+        result.value.id = result.value._id;
+        
         res.json({ 
             success: true, 
             message: 'Order status updated successfully',
@@ -334,7 +535,7 @@ app.put('/api/orders/:id', async (req, res) => {
     }
 });
 
-app.delete('/api/orders/:id', async (req, res) => {
+app.delete('/api/orders/:id', auth, async (req, res) => {
     try {
         // Get the order first to restore product stock
         const order = await db.collection('orders').findOne({
@@ -373,7 +574,7 @@ app.delete('/api/orders/:id', async (req, res) => {
 });
 
 // ==================== CUSTOMERS API ====================
-app.get('/api/customers', async (req, res) => {
+app.get('/api/customers', auth, async (req, res) => {
     try {
         const customers = await db.collection('customers').find({}).toArray();
         res.json({ success: true, data: customers });
@@ -382,7 +583,7 @@ app.get('/api/customers', async (req, res) => {
     }
 });
 
-app.get('/api/customers/:id', async (req, res) => {
+app.get('/api/customers/:id', auth, async (req, res) => {
     try {
         const customer = await db.collection('customers').findOne({
             _id: new ObjectId(req.params.id)
@@ -398,7 +599,7 @@ app.get('/api/customers/:id', async (req, res) => {
     }
 });
 
-app.post('/api/customers', async (req, res) => {
+app.post('/api/customers', auth, async (req, res) => {
     try {
         const { name, email, phone } = req.body;
         
@@ -413,7 +614,8 @@ app.post('/api/customers', async (req, res) => {
             name,
             email,
             phone: phone || '',
-            createdAt: new Date()
+            createdAt: new Date(),
+            createdBy: req.user._id
         };
         
         const result = await db.collection('customers').insertOne(customer);
@@ -429,7 +631,7 @@ app.post('/api/customers', async (req, res) => {
     }
 });
 
-app.put('/api/customers/:id', async (req, res) => {
+app.put('/api/customers/:id', auth, async (req, res) => {
     try {
         const { name, email, phone } = req.body;
         const updateData = {};
@@ -462,7 +664,7 @@ app.put('/api/customers/:id', async (req, res) => {
     }
 });
 
-app.delete('/api/customers/:id', async (req, res) => {
+app.delete('/api/customers/:id', auth, async (req, res) => {
     try {
         // Check if customer has orders
         const ordersCount = await db.collection('orders').countDocuments({
@@ -497,7 +699,7 @@ app.delete('/api/customers/:id', async (req, res) => {
 });
 
 // ==================== SEARCH & STATS ====================
-app.get('/api/orders/search', async (req, res) => {
+app.get('/api/orders/search', auth, async (req, res) => {
     try {
         const { q } = req.query;
         
@@ -524,14 +726,20 @@ app.get('/api/orders/search', async (req, res) => {
             .find(query)
             .sort({ orderNumber: -1 })
             .toArray();
+            
+        // Transform _id to id
+        const transformedOrders = orders.map(order => ({
+            ...order,
+            id: order._id
+        }));
         
-        res.json({ success: true, data: orders });
+        res.json({ success: true, data: transformedOrders });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.get('/api/stats', async (req, res) => {
+app.get('/api/stats', auth, async (req, res) => {
     try {
         const totalOrders = await db.collection('orders').countDocuments();
         const totalProducts = await db.collection('products').countDocuments();
@@ -560,8 +768,11 @@ app.get('/api/stats', async (req, res) => {
 
 // ==================== START SERVER ====================
 connectToDB().then(() => {
-    app.listen(5000, () => {
+    app.listen(PORT, () => {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
+        console.log(`🔐 JWT Secret: ${JWT_SECRET}`);
+        console.log(`👑 Admin: admin@example.com / admin123`);
+        console.log(`📝 All registered users have full admin access`);
     });
 });
 

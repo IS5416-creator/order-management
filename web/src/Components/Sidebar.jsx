@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { authService } from "../services/auth";
 import "../styles/main.css";
 
 function Sidebar() {
@@ -6,6 +7,14 @@ function Sidebar() {
   
   const isActive = (path) => {
     return location.pathname === path;
+  };
+
+  const user = authService.getCurrentUser();
+
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to logout?")) {
+      authService.logout();
+    }
   };
 
   return (
@@ -58,14 +67,18 @@ function Sidebar() {
       </div>
       
       <div className="sidebar-footer">
-        
         <div className="user-info">
           <div className="user-avatar">👤</div>
           <div className="user-details">
-            <div className="user-name">Admin</div>
-            <div className="user-role">Store Manager</div>
+            <div className="user-name">{user?.name || user?.email || 'User'}</div>
+            <div className="user-role">Admin Account</div>
           </div>
         </div>
+        
+        <button onClick={handleLogout} className="logout-btn">
+          <span className="logout-icon">🚪</span>
+          <span className="logout-label">Logout</span>
+        </button>
       </div>
     </div>
   );

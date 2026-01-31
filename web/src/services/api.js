@@ -1,12 +1,118 @@
 const API_BASE_URL = 'http://localhost:5000/api';
 
+// Helper function to get auth headers
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
+
+// Helper function for API requests
+const apiRequest = async (endpoint, options = {}) => {
+  try {
+    const headers = {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+      ...options.headers
+    };
+
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers
+    });
+
+    // Handle 401 Unauthorized (token expired/invalid)
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+      throw new Error('Session expired. Please login again.');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(`API Error (${endpoint}):`, error);
+    throw error;
+  }
+};
+
+// ==================== AUTHENTICATION API ====================
+export const login = async (email, password) => {
+  try {
+    const data = await apiRequest('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+
+    if (data.success) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+    }
+
+    return data;
+  } catch (error) {
+    return { 
+      success: false, 
+      message: error.message || 'Login failed. Please check your credentials.'
+    };
+  }
+};
+
+export const register = async (userData) => {
+  try {
+    const data = await apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData)
+    });
+
+    if (data.success) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+    }
+
+    return data;
+  } catch (error) {
+    return { 
+      success: false, 
+      message: error.message || 'Registration failed.'
+    };
+  }
+};
+
+export const getProfile = async () => {
+  try {
+    return await apiRequest('/auth/profile');
+  } catch (error) {
+    return { 
+      success: false, 
+      message: error.message || 'Failed to fetch profile.'
+    };
+  }
+};
+
+export const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = '/login';
+};
+
+export const isAuthenticated = () => {
+  return !!localStorage.getItem('token');
+};
+
+export const getCurrentUser = () => {
+  const userStr = localStorage.getItem('user');
+  return userStr ? JSON.parse(userStr) : null;
+};
+
+// ==================== ORDERS API ====================
 export const getOrders = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/orders`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await apiRequest('/orders');
     return data.success ? data.data || [] : [];
   } catch (error) {
     console.error('Error fetching orders:', error);
@@ -16,11 +122,7 @@ export const getOrders = async () => {
 
 export const getOrder = async (id) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/orders/${id}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await apiRequest(`/orders/${id}`);
     return data.success ? data.data : null;
   } catch (error) {
     console.error('Error fetching order:', error);
@@ -30,78 +132,50 @@ export const getOrder = async (id) => {
 
 export const createOrder = async (orderData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/orders`, {
+    return await apiRequest('/orders', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderData),
+      body: JSON.stringify(orderData)
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data;
   } catch (error) {
-    console.error('Error creating order:', error);
     return { 
       success: false, 
-      error: error.message || 'Failed to create order' 
+      message: error.message || 'Failed to create order' 
     };
   }
 };
 
+// Note: Changed endpoint to match backend (/:id/status)
 export const updateOrderStatus = async (id, status) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
+    return await apiRequest(`/orders/${id}/status`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status })
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data;
   } catch (error) {
-    console.error('Error updating order:', error);
     return { 
       success: false, 
-      error: error.message || 'Failed to update order' 
+      message: error.message || 'Failed to update order status' 
     };
   }
 };
 
 export const deleteOrder = async (id) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
-      method: 'DELETE',
+    return await apiRequest(`/orders/${id}`, {
+      method: 'DELETE'
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data;
   } catch (error) {
-    console.error('Error deleting order:', error);
     return { 
       success: false, 
-      error: error.message || 'Failed to delete order' 
+      message: error.message || 'Failed to delete order' 
     };
   }
 };
 
+// ==================== PRODUCTS API ====================
 export const getProducts = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await apiRequest('/products');
     return data.success ? data.data || [] : [];
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -111,11 +185,7 @@ export const getProducts = async () => {
 
 export const getProduct = async (id) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await apiRequest(`/products/${id}`);
     return data.success ? data.data : null;
   } catch (error) {
     console.error('Error fetching product:', error);
@@ -125,78 +195,49 @@ export const getProduct = async (id) => {
 
 export const createProduct = async (productData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products`, {
+    return await apiRequest('/products', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(productData),
+      body: JSON.stringify(productData)
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data;
   } catch (error) {
-    console.error('Error creating product:', error);
     return { 
       success: false, 
-      error: error.message || 'Failed to create product' 
+      message: error.message || 'Failed to create product' 
     };
   }
 };
 
 export const updateProduct = async (id, productData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+    return await apiRequest(`/products/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(productData),
+      body: JSON.stringify(productData)
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data;
   } catch (error) {
-    console.error('Error updating product:', error);
     return { 
       success: false, 
-      error: error.message || 'Failed to update product' 
+      message: error.message || 'Failed to update product' 
     };
   }
 };
 
 export const deleteProduct = async (productId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${productId}`, {
-      method: 'DELETE',
+    return await apiRequest(`/products/${productId}`, {
+      method: 'DELETE'
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data;
   } catch (error) {
-    console.error('Error deleting product:', error);
     return { 
       success: false, 
-      error: error.message || 'Failed to delete product' 
+      message: error.message || 'Failed to delete product' 
     };
   }
 };
 
+// ==================== CUSTOMERS API ====================
 export const getCustomers = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/customers`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await apiRequest('/customers');
     return data.success ? data.data || [] : [];
   } catch (error) {
     console.error('Error fetching customers:', error);
@@ -206,11 +247,7 @@ export const getCustomers = async () => {
 
 export const getCustomer = async (id) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/customers/${id}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await apiRequest(`/customers/${id}`);
     return data.success ? data.data : null;
   } catch (error) {
     console.error('Error fetching customer:', error);
@@ -220,78 +257,49 @@ export const getCustomer = async (id) => {
 
 export const createCustomer = async (customerData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/customers`, {
+    return await apiRequest('/customers', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(customerData),
+      body: JSON.stringify(customerData)
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data;
   } catch (error) {
-    console.error('Error creating customer:', error);
     return { 
       success: false, 
-      error: error.message || 'Failed to create customer' 
+      message: error.message || 'Failed to create customer' 
     };
   }
 };
 
 export const updateCustomer = async (id, customerData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/customers/${id}`, {
+    return await apiRequest(`/customers/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(customerData),
+      body: JSON.stringify(customerData)
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data;
   } catch (error) {
-    console.error('Error updating customer:', error);
     return { 
       success: false, 
-      error: error.message || 'Failed to update customer' 
+      message: error.message || 'Failed to update customer' 
     };
   }
 };
 
 export const deleteCustomer = async (id) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/customers/${id}`, {
-      method: 'DELETE',
+    return await apiRequest(`/customers/${id}`, {
+      method: 'DELETE'
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data;
   } catch (error) {
-    console.error('Error deleting customer:', error);
     return { 
       success: false, 
-      error: error.message || 'Failed to delete customer' 
+      message: error.message || 'Failed to delete customer' 
     };
   }
 };
 
+// ==================== SEARCH & STATS ====================
 export const searchOrders = async (query) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/orders/search?q=${encodeURIComponent(query)}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await apiRequest(`/orders/search?q=${encodeURIComponent(query)}`);
     return data.success ? data.data || [] : [];
   } catch (error) {
     console.error('Error searching orders:', error);
@@ -301,11 +309,7 @@ export const searchOrders = async (query) => {
 
 export const searchProducts = async (query) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/search?q=${encodeURIComponent(query)}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await apiRequest(`/products/search?q=${encodeURIComponent(query)}`);
     return data.success ? data.data || [] : [];
   } catch (error) {
     console.error('Error searching products:', error);
@@ -315,11 +319,7 @@ export const searchProducts = async (query) => {
 
 export const getStats = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/stats`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await apiRequest('/stats');
     return data.success ? data.data : {};
   } catch (error) {
     console.error('Error fetching stats:', error);
@@ -341,7 +341,8 @@ export const testBackendConnection = async () => {
     console.error('Backend connection failed:', error);
     return { 
       success: false, 
-      error: 'Cannot connect to backend. Make sure Express server is running on port 3000.' 
+      error: 'Cannot connect to backend. Make sure Express server is running on port 5000.' 
     };
   }
 };
+
