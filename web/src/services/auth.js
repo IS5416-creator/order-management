@@ -1,8 +1,7 @@
-// services/auth.js
 const API_URL = 'http://localhost:5000/api';
 
 export const authService = {
-  // Login
+  
   login: async (email, password) => {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
@@ -21,7 +20,7 @@ export const authService = {
     }
   },
 
-  // Register
+  
   register: async (userData) => {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
@@ -40,21 +39,18 @@ export const authService = {
     }
   },
 
-  // Get current user
+  
   getCurrentUser: () => {
     const userStr = localStorage.getItem('user');
     return userStr ? JSON.parse(userStr) : null;
   },
 
-  // Get token
   getToken: () => localStorage.getItem('token'),
 
-  // Check if authenticated
   isAuthenticated: () => {
     return !!localStorage.getItem('token');
   },
 
-  // Logout
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');

@@ -1,4 +1,3 @@
-// components/Register.js
 import { useState } from 'react';
 import { register } from '../services/api';
 import { Link } from 'react-router-dom';
@@ -15,7 +14,6 @@ function Register() {
     e.preventDefault();
     setError('');
 
-    // Validation
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -32,7 +30,6 @@ function Register() {
       const result = await register({ name, email, password });
       
       if (result.success) {
-        // Redirect to orders page
         window.location.href = '/orders';
       } else {
         setError(result.message || 'Registration failed');

@@ -1,4 +1,3 @@
-// components/Login.js
 import { useState } from 'react';
 import { login } from '../services/api';
 import { Link } from 'react-router-dom';
@@ -18,7 +17,6 @@ function Login() {
       const result = await login(email, password);
       
       if (result.success) {
-        // Redirect to orders page
         window.location.href = '/orders';
       } else {
         setError(result.message || 'Login failed');

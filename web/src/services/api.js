@@ -1,12 +1,10 @@
 const API_BASE_URL = 'http://localhost:5000/api';
 
-// Helper function to get auth headers
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
 
-// Helper function for API requests
 const apiRequest = async (endpoint, options = {}) => {
   try {
     const headers = {
@@ -20,7 +18,6 @@ const apiRequest = async (endpoint, options = {}) => {
       headers
     });
 
-    // Handle 401 Unauthorized (token expired/invalid)
     if (response.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -40,7 +37,6 @@ const apiRequest = async (endpoint, options = {}) => {
   }
 };
 
-// ==================== AUTHENTICATION API ====================
 export const login = async (email, password) => {
   try {
     const data = await apiRequest('/auth/login', {
@@ -109,7 +105,6 @@ export const getCurrentUser = () => {
   return userStr ? JSON.parse(userStr) : null;
 };
 
-// ==================== ORDERS API ====================
 export const getOrders = async () => {
   try {
     const data = await apiRequest('/orders');
@@ -144,7 +139,6 @@ export const createOrder = async (orderData) => {
   }
 };
 
-// Note: Changed endpoint to match backend (/:id/status)
 export const updateOrderStatus = async (id, status) => {
   try {
     return await apiRequest(`/orders/${id}/status`, {
@@ -172,7 +166,6 @@ export const deleteOrder = async (id) => {
   }
 };
 
-// ==================== PRODUCTS API ====================
 export const getProducts = async () => {
   try {
     const data = await apiRequest('/products');
@@ -234,7 +227,6 @@ export const deleteProduct = async (productId) => {
   }
 };
 
-// ==================== CUSTOMERS API ====================
 export const getCustomers = async () => {
   try {
     const data = await apiRequest('/customers');
@@ -296,7 +288,6 @@ export const deleteCustomer = async (id) => {
   }
 };
 
-// ==================== SEARCH & STATS ====================
 export const searchOrders = async (query) => {
   try {
     const data = await apiRequest(`/orders/search?q=${encodeURIComponent(query)}`);
@@ -345,4 +336,3 @@ export const testBackendConnection = async () => {
     };
   }
 };
-

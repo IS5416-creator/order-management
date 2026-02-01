@@ -1,4 +1,3 @@
-// components/ProtectedRoute.js
 import { useEffect } from 'react';
 import { isAuthenticated } from '../services/auth';
 
@@ -10,7 +9,7 @@ const ProtectedRoute = ({ children }) => {
   }, []);
 
   if (!isAuthenticated()) {
-    return null; // Or a loading spinner
+    return null; 
   }
 
   return children;
