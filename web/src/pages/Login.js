@@ -68,6 +68,9 @@ function Login() {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
+         <p className="auth-link">
+          Forgot Password?  <Link to="/reset">Reset Password</Link>
+          </p>
         
         <p className="auth-link">
           Don't have an account? <Link to="/register">Register here</Link>

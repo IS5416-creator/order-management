@@ -10,6 +10,7 @@ import CreateOrder from "./pages/CreateOrder";
 import Sidebar from "./Components/Sidebar";
 import Login from "./pages/Login";
 import Register from "./pages/Registration";
+import ResetPassword from "./pages/ResetPass";
 
 // Protected Route Wrapper Component
 const ProtectedRoute = ({ children }) => {
@@ -75,6 +76,12 @@ function App() {
           path="/login" 
           element={
             !isAuthenticated() ? <Login /> : <Navigate to="/orders" replace />
+          } 
+        />
+        <Route 
+          path="/reset" 
+          element={
+            !isAuthenticated() ? <ResetPassword /> : <Navigate to="/login" replace />
           } 
         />
         <Route 

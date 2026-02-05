@@ -1,18 +1,32 @@
 import { useState } from 'react';
-import { register } from '../services/api';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { resetPassword } from '../services/api';
 
-function Register() {
-  const [name, setName] = useState('');
+function ResetPassword() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setMessage('');
+
+    // Validation
+    if (!email) {
+      setError('Email is required');
+      return;
+    }
+
+    if (!password || !confirmPassword) {
+      setError('Password fields are required');
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -27,15 +41,19 @@ function Register() {
     setLoading(true);
 
     try {
-      const result = await register({ name, email, password });
-      
-      if (result.success) {
-        window.location.href = '/orders';
-      } else {
-        setError(result.message || 'Registration failed');
-      }
+      const data = await resetPassword(email, password);
+
+      setMessage(data.message || 'Password has been reset successfully!');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+
     } catch (err) {
-      setError('An error occurred during registration');
+      setError(err.message || 'Failed to reset password');
     } finally {
       setLoading(false);
     }
@@ -44,77 +62,73 @@ function Register() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Register</h2>
-        
+        <h2>Reset Your Password</h2>
+
+        {message && <div className="alert alert-success">{message}</div>}
         {error && <div className="alert alert-error">{error}</div>}
-        
-        {/* Add autoComplete="off" to the form */}
+
+        <p className="instruction-text">
+          Enter your email and a new password below.
+        </p>
+
         <form onSubmit={handleSubmit} autoComplete="off">
-          <div className="form-group">
-            <label>Full Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              disabled={loading}
-              autoComplete="off"
-            />
-          </div>
-          
           <div className="form-group">
             <label>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
               disabled={loading}
-              autoComplete="off"
+              placeholder="Enter your email"
+              required
             />
           </div>
-          
+
           <div className="form-group">
-            <label>Password</label>
+            <label>New Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
               disabled={loading}
+              placeholder="Enter new password"
               minLength={6}
-              autoComplete="new-password"  // This prevents autofill
+              autoComplete="new-password"
+              required
             />
           </div>
-          
+
           <div className="form-group">
-            <label>Confirm Password</label>
+            <label>Confirm New Password</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              required
               disabled={loading}
+              placeholder="Confirm new password"
               minLength={6}
-              autoComplete="new-password"  // This prevents autofill
+              autoComplete="new-password"
+              required
             />
           </div>
-          
-          <button 
-            type="submit" 
+
+          <button
+            type="submit"
             className="btn btn-primary"
             disabled={loading}
           >
-            {loading ? 'Registering...' : 'Register'}
+            {loading ? 'Resetting Password...' : 'Reset Password'}
           </button>
         </form>
-        
-        <p className="auth-link">
-          Already have an account? <Link to="/login">Login here</Link>
-        </p>
+
+        <div className="auth-links">
+          <p className="back-to-login">
+            <Link to="/login">← Back to Login</Link>
+          </p>
+        </div>
       </div>
     </div>
   );
 }
 
-export default Register;
+export default ResetPassword;

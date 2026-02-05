@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://192.168.1.3:5000/api';
+const API_BASE_URL = 'http://192.168.1.4:5000/api';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -335,4 +335,28 @@ export const testBackendConnection = async () => {
       error: 'Cannot connect to backend. Make sure Express server is running on port 5000.' 
     };
   }
+};
+
+
+export const resetPassword = async (email, password) => {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: JSON.stringify({ email, password }),
+  });
+
+  const text = await response.text(); // 👈 important
+
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error('Server returned invalid response');
+  }
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Password reset failed');
+  }
+
+  return data;
 };

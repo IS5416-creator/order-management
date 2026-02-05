@@ -11,9 +11,10 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const PORT = 5000;
-const JWT_SECRET = 'your-super-secret-jwt-key-here';
+const JWT_SECRET = '5416';
 const uri = "mongodb+srv://israel:israel@cluster0.yyptkvj.mongodb.net/order_management?appName=Cluster0";
 const DB_NAME = 'order_management';
 
@@ -51,29 +52,28 @@ async function initializeSampleData() {
             password: hashedPassword,
             createdAt: new Date()
         });
-        console.log('👑 Created admin user');
+        console.log('Created admin user');
     }
 
     const productsCount = await db.collection('products').countDocuments();
     if (productsCount === 0) {
         await db.collection('products').insertMany([
-            { name: 'Laptop', price: 999.99, category: 'Electronics', stock: 50 },
-            { name: 'Mouse', price: 29.99, category: 'Electronics', stock: 200 },
-            { name: 'Keyboard', price: 89.99, category: 'Electronics', stock: 150 },
-            { name: 'Notebook', price: 12.99, category: 'Stationery', stock: 300 },
-            { name: 'Pen', price: 2.99, category: 'Stationery', stock: 500 }
+            { name: 'Laptop', price: 40000, category: 'Electronics', stock: 50 },
+            { name: 'Mouse', price: 299.9, category: 'Electronics', stock: 20 },
+            { name: 'Keyboard', price: 899.9, category: 'Electronics', stock: 15 },
+            { name: 'Notebook', price: 1200.99, category: 'Stationery', stock: 30 },
+            { name: 'Pen', price: 50, category: 'Stationery', stock: 50 }
         ]);
-        console.log('📦 Added sample products');
+     
     }
 
     const customersCount = await db.collection('customers').countDocuments();
     if (customersCount === 0) {
         await db.collection('customers').insertMany([
-            { name: 'John Doe', email: 'john@example.com', phone: '123-456-7890' },
-            { name: 'Jane Smith', email: 'jane@example.com', phone: '987-654-3210' },
-            { name: 'Bob Johnson', email: 'bob@example.com', phone: '555-123-4567' }
+            { name: 'Israel Alazar', email: 'israel@example.com', phone: '0934565435' },
+            { name: 'Mesay Mesay', email: 'mesi@example.com', phone: '0987786556' },
+            { name: 'Yirdaw Fetari', email: 'tenaw@example.com', phone: '0937365210' }
         ]);
-        console.log('👥 Added sample customers');
     }
 }
 
@@ -220,6 +220,50 @@ app.post('/api/auth/login', async (req, res) => {
         });
     }
 });
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
+
+    const user = await db.collection('users').findOne({
+      email: email.toLowerCase()
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No account found with this email'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.collection('users').updateOne(
+      { _id: user._id },
+      { $set: { password: hashedPassword } }
+    );
+
+    res.json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again.'
+    });
+  }
+});
+
 
 app.get('/api/auth/profile', auth, async (req, res) => {
     res.json({
@@ -730,8 +774,6 @@ connectToDB().then(() => {
     app.listen(PORT, () => {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
         console.log(`🔐 JWT Secret: ${JWT_SECRET}`);
-        console.log(`👑 Admin: admin@example.com / admin123`);
-        console.log(`📝 All registered users have full admin access`);
     });
 });
 
