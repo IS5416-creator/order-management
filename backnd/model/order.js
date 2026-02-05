@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const clothSchema = new mongoose.Schema({
+const orderSchema = new mongoose.Schema({
     productId: {type: Number},
     productName: {type: String, required:true },
     quantitiy: {type: Number},
@@ -10,6 +10,6 @@ const clothSchema = new mongoose.Schema({
     date: {type: Date}
 })
 
-const Order = mongoose.model('Order',movieSchema)
+const Order = mongoose.model('Order',orderSchema)
 
 module.exports = Order

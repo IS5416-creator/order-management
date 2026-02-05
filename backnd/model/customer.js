@@ -1,11 +1,11 @@
 const mongoose = require('mongoose')
 
-const clothSchema = new mongoose.Schema({
+const customerSchema = new mongoose.Schema({
     customerName: {type: String},
     email: {type: String},
     phone: {type: Number}
 })
 
-const Customer = mongoose.model('Customer',movieSchema)
+const Customer = mongoose.model('Customer',customerSchema)
 
 module.exports = Customer

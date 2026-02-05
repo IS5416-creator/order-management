@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 
-const clothSchema = new mongoose.Schema({
+const notificationSchema = new mongoose.Schema({
   message: { type: String },
   type: { type: String },
   time: { type: Date },
 });
 
-const Notification = mongoose.model("Notification", movieSchema);
+const Notification = mongoose.model("Notification", notificationSchema);
 
 module.exports = Notification;

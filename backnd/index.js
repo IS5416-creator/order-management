@@ -5,11 +5,15 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 const PORT = 5000;
-const JWT_SECRET = 'your-super-secret-jwt-key-here'; // Change this in production
+const JWT_SECRET = 'your-super-secret-jwt-key-here';
 const uri = "mongodb+srv://israel:israel@cluster0.yyptkvj.mongodb.net/order_management?appName=Cluster0";
 const DB_NAME = 'order_management';
 
@@ -38,7 +42,6 @@ async function connectToDB() {
 }
 
 async function initializeSampleData() {
-    // Check and create admin user if doesn't exist
     const adminExists = await db.collection('users').findOne({ email: 'admin@example.com' });
     if (!adminExists) {
         const hashedPassword = await bcrypt.hash('admin123', 10);
@@ -74,15 +77,10 @@ async function initializeSampleData() {
     }
 }
 
-// ==============================================
-// AUTHENTICATION MIDDLEWARE
-// ==============================================
 const auth = async (req, res, next) => {
     try {
-        // 1. Get token from Authorization header
         const token = req.header('Authorization')?.replace('Bearer ', '');
         
-        // 2. Check if token exists
         if (!token) {
             return res.status(401).json({ 
                 success: false, 
@@ -90,10 +88,8 @@ const auth = async (req, res, next) => {
             });
         }
         
-        // 3. Verify the token
         const decoded = jwt.verify(token, JWT_SECRET);
         
-        // 4. Find user by ID from token
         const user = await db.collection('users').findOne({ 
             _id: new ObjectId(decoded.userId) 
         });
@@ -105,14 +101,11 @@ const auth = async (req, res, next) => {
             });
         }
         
-        // 5. Remove password from user object
         delete user.password;
         
-        // 6. Attach user to request object
         req.user = user;
         req.token = token;
         
-        // 7. Continue to the route
         next();
     } catch (error) {
         console.error('Auth middleware error:', error);
@@ -123,13 +116,10 @@ const auth = async (req, res, next) => {
     }
 };
 
-// ==================== AUTHENTICATION API ====================
-// Register new admin user
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { name, email, password } = req.body;
         
-        // Validate input
         if (!name || !email || !password) {
             return res.status(400).json({ 
                 success: false, 
@@ -137,7 +127,6 @@ app.post('/api/auth/register', async (req, res) => {
             });
         }
         
-        // Check if user already exists
         const existingUser = await db.collection('users').findOne({ email });
         if (existingUser) {
             return res.status(400).json({ 
@@ -146,10 +135,8 @@ app.post('/api/auth/register', async (req, res) => {
             });
         }
         
-        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
         
-        // Create user (all users are admins)
         const user = {
             name,
             email,
@@ -160,14 +147,12 @@ app.post('/api/auth/register', async (req, res) => {
         const result = await db.collection('users').insertOne(user);
         user._id = result.insertedId;
         
-        // Create token
         const token = jwt.sign(
             { userId: user._id.toString(), email: user.email },
             JWT_SECRET,
             { expiresIn: '7d' }
         );
         
-        // Remove password from response
         delete user.password;
         
         res.status(201).json({
@@ -185,12 +170,10 @@ app.post('/api/auth/register', async (req, res) => {
     }
 });
 
-// Login admin user
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
-        // Validate input
         if (!email || !password) {
             return res.status(400).json({ 
                 success: false, 
@@ -198,7 +181,6 @@ app.post('/api/auth/login', async (req, res) => {
             });
         }
         
-        // Find user
         const user = await db.collection('users').findOne({ email });
         if (!user) {
             return res.status(400).json({ 
@@ -207,7 +189,6 @@ app.post('/api/auth/login', async (req, res) => {
             });
         }
         
-        // Check password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(400).json({ 
@@ -216,14 +197,12 @@ app.post('/api/auth/login', async (req, res) => {
             });
         }
         
-        // Create token
         const token = jwt.sign(
             { userId: user._id.toString(), email: user.email },
             JWT_SECRET,
             { expiresIn: '7d' }
         );
         
-        // Remove password from response
         const userWithoutPassword = { ...user };
         delete userWithoutPassword.password;
         
@@ -242,7 +221,6 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// Get user profile (protected)
 app.get('/api/auth/profile', auth, async (req, res) => {
     res.json({
         success: true,
@@ -250,7 +228,6 @@ app.get('/api/auth/profile', auth, async (req, res) => {
     });
 });
 
-// ==================== PRODUCTS API ====================
 app.get('/api/products', auth, async (req, res) => {
     try {
         const products = await db.collection('products').find({}).toArray();
@@ -365,7 +342,6 @@ app.delete('/api/products/:id', auth, async (req, res) => {
     }
 });
 
-// ==================== ORDERS API ====================
 app.get('/api/orders', auth, async (req, res) => {
     try {
         const orders = await db.collection('orders')
@@ -373,7 +349,6 @@ app.get('/api/orders', auth, async (req, res) => {
             .sort({ orderNumber: -1 })
             .toArray();
             
-        // Transform _id to id for frontend compatibility
         const transformedOrders = orders.map(order => ({
             ...order,
             id: order._id
@@ -395,7 +370,6 @@ app.get('/api/orders/:id', auth, async (req, res) => {
             return res.status(404).json({ success: false, error: 'Order not found' });
         }
         
-        // Add id field for frontend
         order.id = order._id;
         
         res.json({ success: true, data: order });
@@ -415,7 +389,6 @@ app.post('/api/orders', auth, async (req, res) => {
             });
         }
         
-        // Get the next order number
         const lastOrder = await db.collection('orders')
             .find()
             .sort({ orderNumber: -1 })
@@ -424,7 +397,6 @@ app.post('/api/orders', auth, async (req, res) => {
         
         const orderNumber = lastOrder.length > 0 ? lastOrder[0].orderNumber + 1 : 1001;
         
-        // Calculate total and validate products
         let total = 0;
         for (const item of items) {
             if (!item.productId || !item.quantity) {
@@ -434,7 +406,6 @@ app.post('/api/orders', auth, async (req, res) => {
                 });
             }
             
-            // Get product price
             const product = await db.collection('products').findOne({
                 _id: new ObjectId(item.productId)
             });
@@ -470,12 +441,10 @@ app.post('/api/orders', auth, async (req, res) => {
             createdBy: req.user._id
         };
         
-        // 1. Insert order
         const result = await db.collection('orders').insertOne(order);
         order._id = result.insertedId;
         order.id = order._id;
         
-        // 2. Update product stock
         for (const item of items) {
             await db.collection('products').updateOne(
                 { _id: new ObjectId(item.productId) },
@@ -522,7 +491,6 @@ app.put('/api/orders/:id/status', auth, async (req, res) => {
             });
         }
         
-        // Add id field for frontend
         result.value.id = result.value._id;
         
         res.json({ 
@@ -537,7 +505,6 @@ app.put('/api/orders/:id/status', auth, async (req, res) => {
 
 app.delete('/api/orders/:id', auth, async (req, res) => {
     try {
-        // Get the order first to restore product stock
         const order = await db.collection('orders').findOne({
             _id: new ObjectId(req.params.id)
         });
@@ -549,7 +516,6 @@ app.delete('/api/orders/:id', auth, async (req, res) => {
             });
         }
         
-        // Restore product stock if order is cancelled or deleted
         if (order.status !== 'cancelled') {
             for (const item of order.items) {
                 await db.collection('products').updateOne(
@@ -559,7 +525,6 @@ app.delete('/api/orders/:id', auth, async (req, res) => {
             }
         }
         
-        // Delete the order
         await db.collection('orders').deleteOne({
             _id: new ObjectId(req.params.id)
         });
@@ -573,7 +538,6 @@ app.delete('/api/orders/:id', auth, async (req, res) => {
     }
 });
 
-// ==================== CUSTOMERS API ====================
 app.get('/api/customers', auth, async (req, res) => {
     try {
         const customers = await db.collection('customers').find({}).toArray();
@@ -666,7 +630,6 @@ app.put('/api/customers/:id', auth, async (req, res) => {
 
 app.delete('/api/customers/:id', auth, async (req, res) => {
     try {
-        // Check if customer has orders
         const ordersCount = await db.collection('orders').countDocuments({
             customerId: req.params.id
         });
@@ -698,7 +661,6 @@ app.delete('/api/customers/:id', auth, async (req, res) => {
     }
 });
 
-// ==================== SEARCH & STATS ====================
 app.get('/api/orders/search', auth, async (req, res) => {
     try {
         const { q } = req.query;
@@ -717,7 +679,6 @@ app.get('/api/orders/search', auth, async (req, res) => {
             ]
         };
         
-        // Check if query is a number (order number)
         if (!isNaN(q)) {
             query.$or.push({ orderNumber: parseInt(q) });
         }
@@ -727,7 +688,6 @@ app.get('/api/orders/search', auth, async (req, res) => {
             .sort({ orderNumber: -1 })
             .toArray();
             
-        // Transform _id to id
         const transformedOrders = orders.map(order => ({
             ...order,
             id: order._id
@@ -766,7 +726,6 @@ app.get('/api/stats', auth, async (req, res) => {
     }
 });
 
-// ==================== START SERVER ====================
 connectToDB().then(() => {
     app.listen(PORT, () => {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
@@ -776,7 +735,6 @@ connectToDB().then(() => {
     });
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ 
@@ -785,7 +743,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-// 404 handler
 app.use((req, res) => {
     res.status(404).json({ 
         success: false, 
