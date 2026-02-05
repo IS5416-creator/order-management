@@ -42,6 +42,14 @@ function Sidebar() {
         </Link>
         
         <Link 
+          to="/customers" 
+          className={`nav-link ${isActive("/customers") ? "active" : ""}`}
+        >
+          <span className="nav-icon">👥</span>
+          <span className="nav-label">Customers</span>
+        </Link>
+        
+        <Link 
           to="/orders" 
           className={`nav-link ${isActive("/orders") ? "active" : ""}`}
         >

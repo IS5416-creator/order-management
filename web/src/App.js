@@ -11,6 +11,7 @@ import Sidebar from "./Components/Sidebar";
 import Login from "./pages/Login";
 import Register from "./pages/Registration";
 import ResetPassword from "./pages/ResetPass";
+import CustomersPage from "./pages/CustomersPage";
 
 // Protected Route Wrapper Component
 const ProtectedRoute = ({ children }) => {
@@ -116,6 +117,16 @@ function App() {
             <ProtectedRoute>
               <AppLayout>
                 <Orders />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/customers" 
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <CustomersPage />
               </AppLayout>
             </ProtectedRoute>
           } 
