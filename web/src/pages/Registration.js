@@ -48,7 +48,7 @@ function Register() {
         
         {error && <div className="alert alert-error">{error}</div>}
         
-        {/* Add autoComplete="off" to the form */}
+        
         <form onSubmit={handleSubmit} autoComplete="off">
           <div className="form-group">
             <label>Full Name</label>
@@ -83,7 +83,7 @@ function Register() {
               required
               disabled={loading}
               minLength={6}
-              autoComplete="new-password"  // This prevents autofill
+              autoComplete="new-password"  
             />
           </div>
           
@@ -96,7 +96,7 @@ function Register() {
               required
               disabled={loading}
               minLength={6}
-              autoComplete="new-password"  // This prevents autofill
+              autoComplete="new-password"  
             />
           </div>
           

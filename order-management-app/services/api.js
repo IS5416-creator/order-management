@@ -1,7 +1,7 @@
-const API_BASE_URL = 'http://192.168.1.2:5000/api';
+const API_BASE_URL = 'http://192.168.1.4:5000/api'; // Update IP as needed
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
+  const token = localStorage?.getItem('token') || null;
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
 
@@ -19,9 +19,7 @@ const apiRequest = async (endpoint, options = {}) => {
     });
 
     if (response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      // For React Native, we'll use AsyncStorage instead
       throw new Error('Session expired. Please login again.');
     }
 
@@ -37,17 +35,13 @@ const apiRequest = async (endpoint, options = {}) => {
   }
 };
 
+// Auth functions
 export const login = async (email, password) => {
   try {
     const data = await apiRequest('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password })
     });
-
-    if (data.success) {
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-    }
 
     return data;
   } catch (error) {
@@ -65,11 +59,6 @@ export const register = async (userData) => {
       body: JSON.stringify(userData)
     });
 
-    if (data.success) {
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-    }
-
     return data;
   } catch (error) {
     return { 
@@ -79,32 +68,12 @@ export const register = async (userData) => {
   }
 };
 
-export const getProfile = async () => {
-  try {
-    return await apiRequest('/auth/profile');
-  } catch (error) {
-    return { 
-      success: false, 
-      message: error.message || 'Failed to fetch profile.'
-    };
-  }
-};
-
 export const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  window.location.href = '/login';
+  // AsyncStorage will be cleared in React Native
+  return { success: true };
 };
 
-export const isAuthenticated = () => {
-  return !!localStorage.getItem('token');
-};
-
-export const getCurrentUser = () => {
-  const userStr = localStorage.getItem('user');
-  return userStr ? JSON.parse(userStr) : null;
-};
-
+// Order functions
 export const getOrders = async () => {
   try {
     const data = await apiRequest('/orders');
@@ -112,16 +81,6 @@ export const getOrders = async () => {
   } catch (error) {
     console.error('Error fetching orders:', error);
     return [];
-  }
-};
-
-export const getOrder = async (id) => {
-  try {
-    const data = await apiRequest(`/orders/${id}`);
-    return data.success ? data.data : null;
-  } catch (error) {
-    console.error('Error fetching order:', error);
-    return null;
   }
 };
 
@@ -166,6 +125,7 @@ export const deleteOrder = async (id) => {
   }
 };
 
+// Product functions
 export const getProducts = async () => {
   try {
     const data = await apiRequest('/products');
@@ -173,16 +133,6 @@ export const getProducts = async () => {
   } catch (error) {
     console.error('Error fetching products:', error);
     return [];
-  }
-};
-
-export const getProduct = async (id) => {
-  try {
-    const data = await apiRequest(`/products/${id}`);
-    return data.success ? data.data : null;
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    return null;
   }
 };
 
@@ -227,6 +177,7 @@ export const deleteProduct = async (productId) => {
   }
 };
 
+// Customer functions
 export const getCustomers = async () => {
   try {
     const data = await apiRequest('/customers');
@@ -234,16 +185,6 @@ export const getCustomers = async () => {
   } catch (error) {
     console.error('Error fetching customers:', error);
     return [];
-  }
-};
-
-export const getCustomer = async (id) => {
-  try {
-    const data = await apiRequest(`/customers/${id}`);
-    return data.success ? data.data : null;
-  } catch (error) {
-    console.error('Error fetching customer:', error);
-    return null;
   }
 };
 
@@ -288,26 +229,7 @@ export const deleteCustomer = async (id) => {
   }
 };
 
-export const searchOrders = async (query) => {
-  try {
-    const data = await apiRequest(`/orders/search?q=${encodeURIComponent(query)}`);
-    return data.success ? data.data || [] : [];
-  } catch (error) {
-    console.error('Error searching orders:', error);
-    return [];
-  }
-};
-
-export const searchProducts = async (query) => {
-  try {
-    const data = await apiRequest(`/products/search?q=${encodeURIComponent(query)}`);
-    return data.success ? data.data || [] : [];
-  } catch (error) {
-    console.error('Error searching products:', error);
-    return [];
-  }
-};
-
+// Stats
 export const getStats = async () => {
   try {
     const data = await apiRequest('/stats');
@@ -332,31 +254,7 @@ export const testBackendConnection = async () => {
     console.error('Backend connection failed:', error);
     return { 
       success: false, 
-      error: 'Cannot connect to backend. Make sure Express server is running on port 5000.' 
+      error: 'Cannot connect to backend. Make sure Express server is running.' 
     };
   }
-};
-
-
-export const resetPassword = async (email, password) => {
-  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json',},
-    body: JSON.stringify({ email, password }),
-  });
-
-  const text = await response.text(); 
-
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    throw new Error('Server returned invalid response');
-  }
-
-  if (!response.ok) {
-    throw new Error(data.message || 'Password reset failed');
-  }
-
-  return data;
 };

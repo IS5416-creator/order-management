@@ -50,12 +50,13 @@ const CustomersPage = () => {
     
     try {
       if (editingCustomer) {
-        // Update existing customer
-        const result = await updateCustomer(editingCustomer._id || editingCustomer.id, formData);
+        const result = await updateCustomer(
+          editingCustomer._id || editingCustomer.id,
+          formData
+        );
         if (result.success) {
-          // Update the customer in the list
           setCustomers(customers.map(customer => 
-            (customer._id === editingCustomer._id || customer.id === editingCustomer.id) 
+            (customer._id === editingCustomer._id || customer.id === editingCustomer.id)
               ? { ...customer, ...formData }
               : customer
           ));
@@ -64,18 +65,14 @@ const CustomersPage = () => {
           alert(result.message || "Failed to update customer");
         }
       } else {
-        // Create new customer
         const result = await createCustomer(formData);
         if (result.success) {
-          // Add the new customer to the list
-          fetchCustomers(); // Refresh the list
+          fetchCustomers();
           alert("Customer created successfully!");
         } else {
           alert(result.message || "Failed to create customer");
         }
       }
-      
-      // Reset form
       resetForm();
     } catch (err) {
       alert("An error occurred. Please try again.");
@@ -113,9 +110,8 @@ const CustomersPage = () => {
     try {
       const result = await deleteCustomer(id);
       if (result.success) {
-        // Remove customer from the list
-        setCustomers(customers.filter(customer => 
-          (customer._id !== id && customer.id !== id)
+        setCustomers(customers.filter(customer =>
+          customer._id !== id && customer.id !== id
         ));
         alert("Customer deleted successfully!");
       } else {
@@ -140,7 +136,7 @@ const CustomersPage = () => {
     <div className="page">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h2>Customers</h2>
-        <button 
+        <button
           onClick={() => setShowForm(!showForm)}
           style={{
             backgroundColor: "#0d6efd",
@@ -165,7 +161,7 @@ const CustomersPage = () => {
           marginBottom: "20px"
         }}>
           {error}
-          <button 
+          <button
             onClick={fetchCustomers}
             style={{
               marginLeft: "10px",
@@ -182,7 +178,6 @@ const CustomersPage = () => {
         </div>
       )}
 
-      {/* Customer Form */}
       {showForm && (
         <div style={{
           backgroundColor: "#f8f9fa",
@@ -311,7 +306,6 @@ const CustomersPage = () => {
         </div>
       )}
 
-      {/* Customers Table */}
       <div style={{ overflowX: "auto" }}>
         <table border="1" cellPadding="10" cellSpacing="0" width="100%">
           <thead>
@@ -323,13 +317,12 @@ const CustomersPage = () => {
               <th>Actions</th>
             </tr>
           </thead>
-
           <tbody>
             {customers.length === 0 ? (
               <tr>
                 <td colSpan="5" style={{ textAlign: "center", padding: "40px" }}>
-                  <p style={{ marginBottom: "10px" }}>No customers found</p>
-                  <button 
+                  <p>No customers found</p>
+                  <button
                     onClick={() => setShowForm(true)}
                     style={{
                       backgroundColor: "#0d6efd",
@@ -345,43 +338,15 @@ const CustomersPage = () => {
                 </td>
               </tr>
             ) : (
-              customers.map((customer) => (
+              customers.map(customer => (
                 <tr key={customer._id || customer.id}>
-                  <td style={{ fontWeight: "500" }}>{customer.name}</td>
+                  <td>{customer.name}</td>
                   <td>{customer.email}</td>
                   <td>{customer.phone || "N/A"}</td>
                   <td>{customer.address || "N/A"}</td>
                   <td>
-                    <div style={{ display: "flex", gap: "10px" }}>
-                      <button
-                        onClick={() => handleEdit(customer)}
-                        style={{
-                          backgroundColor: "#ffc107",
-                          color: "#212529",
-                          border: "none",
-                          padding: "6px 12px",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "14px"
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(customer._id || customer.id)}
-                        style={{
-                          backgroundColor: "#dc3545",
-                          color: "white",
-                          border: "none",
-                          padding: "6px 12px",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "14px"
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    <button onClick={() => handleEdit(customer)}>Edit</button>
+                    <button onClick={() => handleDelete(customer._id || customer.id)}>Delete</button>
                   </td>
                 </tr>
               ))
@@ -390,19 +355,8 @@ const CustomersPage = () => {
         </table>
       </div>
 
-      {/* Summary */}
       {customers.length > 0 && (
-        <div style={{
-          marginTop: "20px",
-          padding: "15px",
-          backgroundColor: "#f8f9fa",
-          borderRadius: "4px",
-          display: "inline-block"
-        }}>
-          <p style={{ margin: 0, color: "#495057" }}>
-            Total Customers: <strong>{customers.length}</strong>
-          </p>
-        </div>
+        <p>Total Customers: <strong>{customers.length}</strong></p>
       )}
     </div>
   );

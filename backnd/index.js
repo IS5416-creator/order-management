@@ -705,6 +705,46 @@ app.delete('/api/customers/:id', auth, async (req, res) => {
     }
 });
 
+// Add to your backend server.js
+app.get('/api/customers', auth, async (req, res) => {
+  try {
+    const customers = await db.collection('customers').find({}).toArray();
+    res.json({ success: true, data: customers });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/customers', auth, async (req, res) => {
+  try {
+    const { name, email, phone } = req.body;
+    const customer = {
+      name,
+      email,
+      phone,
+      createdAt: new Date(),
+      createdBy: req.user._id
+    };
+    const result = await db.collection('customers').insertOne(customer);
+    customer._id = result.insertedId;
+    res.status(201).json({ success: true, data: customer });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/api/notifications', auth, async (req, res) => {
+  try {
+    const notifications = await db.collection('notifications')
+      .find({ userId: req.user._id })
+      .sort({ createdAt: -1 })
+      .toArray();
+    res.json({ success: true, data: notifications });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.get('/api/orders/search', auth, async (req, res) => {
     try {
         const { q } = req.query;

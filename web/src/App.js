@@ -13,13 +13,13 @@ import Register from "./pages/Registration";
 import ResetPassword from "./pages/ResetPass";
 import CustomersPage from "./pages/CustomersPage";
 
-// Protected Route Wrapper Component
+
 const ProtectedRoute = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
-    // Check authentication status
+    
     const checkAuth = () => {
       const authStatus = isAuthenticated();
       setIsAuth(authStatus);
@@ -28,7 +28,7 @@ const ProtectedRoute = ({ children }) => {
 
     checkAuth();
     
-    // Check auth on storage changes (like token expiration)
+    
     const handleStorageChange = () => {
       checkAuth();
     };
@@ -56,7 +56,7 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Layout with Sidebar (only for authenticated users)
+
 const AppLayout = ({ children }) => {
   return (
     <div className="app-layout">
@@ -72,7 +72,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Routes - No Sidebar */}
+        
         <Route 
           path="/login" 
           element={
@@ -92,7 +92,7 @@ function App() {
           } 
         />
 
-        {/* Protected Routes - With Sidebar Layout */}
+        
         <Route 
           path="/" 
           element={
@@ -165,7 +165,7 @@ function App() {
           } 
         />
         
-        {/* Catch-all route - redirect to appropriate page */}
+        
         <Route 
           path="*" 
           element={

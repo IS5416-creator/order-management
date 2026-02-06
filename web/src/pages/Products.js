@@ -147,7 +147,7 @@ function Products() {
           </p>
         </div>
         <div>
-          <a href="/create-product" className="btn btn-primary">
+          <a href="/create" className="btn btn-primary">
             + Add New Product
           </a>
         </div>

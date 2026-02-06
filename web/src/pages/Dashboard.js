@@ -14,31 +14,23 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    // Calculate totals whenever orders change
     if (orders.length > 0) {
       setTotalOrders(orders.length);
-      
-      // Calculate total sales by summing all order totals
+
       const salesTotal = orders.reduce((sum, order) => {
-        // Ensure order.total is a number
         const orderTotal = parseFloat(order.total) || 0;
         return sum + orderTotal;
       }, 0);
-      
+
       setTotalSales(salesTotal);
-      
-      // Calculate number of unique customers
+
       const uniqueCustomers = new Set();
       orders.forEach(order => {
         if (order.customerName) {
           uniqueCustomers.add(order.customerName);
         }
-        // If you have customerId in your data, you could use that instead:
-        // if (order.customerId) {
-        //   uniqueCustomers.add(order.customerId);
-        // }
       });
-      
+
       setTotalCustomers(uniqueCustomers.size);
     } else {
       setTotalOrders(0);
@@ -83,106 +75,159 @@ const Dashboard = () => {
     <div className="page">
       <h2>Dashboard</h2>
 
-      {/* Summary Cards Section */}
-      <div style={{
-        display: "flex",
-        gap: "20px",
-        marginBottom: "30px",
-        flexWrap: "wrap"
-      }}>
-        <div style={{
-          backgroundColor: "#f8f9fa",
-          padding: "20px",
-          borderRadius: "8px",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-          minWidth: "200px",
-          flex: 1
-        }}>
-          <h3 style={{ margin: "0 0 10px 0", color: "#495057" }}>Total Orders</h3>
-          <p style={{
-            fontSize: "2rem",
-            fontWeight: "bold",
-            margin: 0,
-            color: "#0d6efd"
-          }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "20px",
+          marginBottom: "30px",
+          flexWrap: "wrap"
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: "#f8f9fa",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+            minWidth: "200px",
+            flex: 1
+          }}
+        >
+          <h3 style={{ margin: "0 0 10px 0", color: "#495057" }}>
+            Total Orders
+          </h3>
+          <p
+            style={{
+              fontSize: "2rem",
+              fontWeight: "bold",
+              margin: 0,
+              color: "#0d6efd"
+            }}
+          >
             {totalOrders}
           </p>
-          <p style={{ color: "#6c757d", margin: "5px 0 0 0", fontSize: "0.9rem" }}>
+          <p
+            style={{
+              color: "#6c757d",
+              margin: "5px 0 0 0",
+              fontSize: "0.9rem"
+            }}
+          >
             All time orders
           </p>
         </div>
 
-        <div style={{
-          backgroundColor: "#f8f9fa",
-          padding: "20px",
-          borderRadius: "8px",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-          minWidth: "200px",
-          flex: 1
-        }}>
-          <h3 style={{ margin: "0 0 10px 0", color: "#495057" }}>Total Sales</h3>
-          <p style={{
-            fontSize: "2rem",
-            fontWeight: "bold",
-            margin: 0,
-            color: "#198754"
-          }}>
+        <div
+          style={{
+            backgroundColor: "#f8f9fa",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+            minWidth: "200px",
+            flex: 1
+          }}
+        >
+          <h3 style={{ margin: "0 0 10px 0", color: "#495057" }}>
+            Total Sales
+          </h3>
+          <p
+            style={{
+              fontSize: "2rem",
+              fontWeight: "bold",
+              margin: 0,
+              color: "#198754"
+            }}
+          >
             {totalSales.toFixed(2)} ETB
           </p>
-          <p style={{ color: "#6c757d", margin: "5px 0 0 0", fontSize: "0.9rem" }}>
+          <p
+            style={{
+              color: "#6c757d",
+              margin: "5px 0 0 0",
+              fontSize: "0.9rem"
+            }}
+          >
             Gross revenue
           </p>
         </div>
 
-        <div style={{
-          backgroundColor: "#f8f9fa",
-          padding: "20px",
-          borderRadius: "8px",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-          minWidth: "200px",
-          flex: 1
-        }}>
-          <h3 style={{ margin: "0 0 10px 0", color: "#495057" }}>Customers</h3>
-          <p style={{
-            fontSize: "2rem",
-            fontWeight: "bold",
-            margin: 0,
-            color: "#fd7e14"
-          }}>
+        <div
+          style={{
+            backgroundColor: "#f8f9fa",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+            minWidth: "200px",
+            flex: 1
+          }}
+        >
+          <h3 style={{ margin: "0 0 10px 0", color: "#495057" }}>
+            Customers
+          </h3>
+          <p
+            style={{
+              fontSize: "2rem",
+              fontWeight: "bold",
+              margin: 0,
+              color: "#fd7e14"
+            }}
+          >
             {totalCustomers}
           </p>
-          <p style={{ color: "#6c757d", margin: "5px 0 0 0", fontSize: "0.9rem" }}>
+          <p
+            style={{
+              color: "#6c757d",
+              margin: "5px 0 0 0",
+              fontSize: "0.9rem"
+            }}
+          >
             Unique customers
           </p>
         </div>
       </div>
 
-      {/* Optional: Add Average Order Value if needed */}
       {totalOrders > 0 && totalCustomers > 0 && (
-        <div style={{
-          backgroundColor: "#e8f4fd",
-          padding: "15px",
-          borderRadius: "6px",
-          marginBottom: "20px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}>
+        <div
+          style={{
+            backgroundColor: "#e8f4fd",
+            padding: "15px",
+            borderRadius: "6px",
+            marginBottom: "20px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}
+        >
           <div>
-            <p style={{ margin: "0 0 5px 0", fontWeight: "bold", color: "#0a58ca" }}>
+            <p
+              style={{
+                margin: "0 0 5px 0",
+                fontWeight: "bold",
+                color: "#0a58ca"
+              }}
+            >
               Business Insights
             </p>
             <p style={{ margin: 0, color: "#495057", fontSize: "0.95rem" }}>
-              <strong>Average Order Value:</strong> {(totalSales / totalOrders).toFixed(2)} ETB •
-              <strong style={{ marginLeft: "15px" }}>Orders per Customer:</strong> {(totalOrders / totalCustomers).toFixed(1)}
+              <strong>Average Order Value:</strong>{" "}
+              {(totalSales / totalOrders).toFixed(2)} ETB •
+              <strong style={{ marginLeft: "15px" }}>
+                Orders per Customer:
+              </strong>{" "}
+              {(totalOrders / totalCustomers).toFixed(1)}
             </p>
           </div>
         </div>
       )}
 
-      {/* Orders Table */}
       <h3>Recent Orders</h3>
-      <table border="1" cellPadding="10" cellSpacing="0" width="100%" style={{ marginTop: "10px" }}>
+      <table
+        border="1"
+        cellPadding="10"
+        cellSpacing="0"
+        width="100%"
+        style={{ marginTop: "10px" }}
+      >
         <thead>
           <tr>
             <th>Order #</th>
@@ -202,7 +247,7 @@ const Dashboard = () => {
             </tr>
           )}
 
-          {orders.map((order) => (
+          {orders.map(order => (
             <tr key={order._id || order.id}>
               <td>#{order.orderNumber}</td>
               <td>{order.customerName}</td>
@@ -227,7 +272,7 @@ const Dashboard = () => {
                         ? "#856404"
                         : order.status === "cancelled"
                         ? "#721c24"
-                        : "#004085",
+                        : "#004085"
                   }}
                 >
                   {order.status?.charAt(0).toUpperCase() +

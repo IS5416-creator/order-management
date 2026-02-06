@@ -17,7 +17,7 @@ function ResetPassword() {
     setError('');
     setMessage('');
 
-    // Validation
+    
     if (!email) {
       setError('Email is required');
       return;
