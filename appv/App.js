@@ -12,7 +12,6 @@ import {
   RefreshControl,
 } from 'react-native';
 
-// Import API functions
 import {
   login as apiLogin,
   logout as apiLogout,
@@ -23,9 +22,6 @@ import {
   markAllNotificationsAsRead,
 } from './src/api/api';
 
-// ============================================
-// LOGIN SCREEN COMPONENT
-// ============================================
 function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState('admin@example.com');
   const [password, setPassword] = useState('admin123');
@@ -38,10 +34,10 @@ function LoginScreen({ onLogin }) {
     }
 
     setLoading(true);
-    
+
     try {
       const result = await apiLogin(email, password);
-      
+
       if (result.success) {
         onLogin(result.user);
       } else {
@@ -59,7 +55,7 @@ function LoginScreen({ onLogin }) {
       <View style={styles.loginCard}>
         <Text style={styles.loginTitle}>📦 Order Management</Text>
         <Text style={styles.loginSubtitle}>Sign in to continue</Text>
-        
+
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -68,7 +64,7 @@ function LoginScreen({ onLogin }) {
           autoCapitalize="none"
           keyboardType="email-address"
         />
-        
+
         <TextInput
           style={styles.input}
           placeholder="Password"
@@ -76,7 +72,7 @@ function LoginScreen({ onLogin }) {
           onChangeText={setPassword}
           secureTextEntry
         />
-        
+
         <TouchableOpacity
           style={[styles.loginButton, loading && styles.buttonDisabled]}
           onPress={handleLogin}
@@ -88,7 +84,7 @@ function LoginScreen({ onLogin }) {
             <Text style={styles.loginButtonText}>Login</Text>
           )}
         </TouchableOpacity>
-        
+
         <Text style={styles.demoText}>
           Demo: admin@example.com / admin123
         </Text>
@@ -97,9 +93,6 @@ function LoginScreen({ onLogin }) {
   );
 }
 
-// ============================================
-// PRODUCTS SCREEN COMPONENT
-// ============================================
 function ProductsScreen() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -136,10 +129,12 @@ function ProductsScreen() {
       </View>
       <View style={styles.productDetails}>
         <Text style={styles.productCategory}>{item.category}</Text>
-        <Text style={[
-          styles.productStock,
-          item.stock < 10 && styles.lowStock
-        ]}>
+        <Text
+          style={[
+            styles.productStock,
+            item.stock < 10 && styles.lowStock,
+          ]}
+        >
           Stock: {item.stock}
         </Text>
       </View>
@@ -174,9 +169,6 @@ function ProductsScreen() {
   );
 }
 
-// ============================================
-// ORDERS SCREEN COMPONENT
-// ============================================
 function OrdersScreen() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -211,22 +203,32 @@ function OrdersScreen() {
     <View style={styles.orderCard}>
       <View style={styles.orderHeader}>
         <Text style={styles.orderNumber}>Order #{item.orderNumber}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+        <View
+          style={[
+            styles.statusBadge,
+            { backgroundColor: getStatusColor(item.status) },
+          ]}
+        >
           <Text style={styles.statusText}>{item.status.toUpperCase()}</Text>
         </View>
       </View>
-      
+
       <Text style={styles.customerName}>{item.customerName}</Text>
-      
+
       <View style={styles.orderFooter}>
         <Text style={styles.orderDate}>
-          {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A'}
+          {item.createdAt
+            ? new Date(item.createdAt).toLocaleDateString()
+            : 'N/A'}
         </Text>
-        <Text style={styles.orderTotal}>ETB{item.total?.toFixed(2) || '0.00'}</Text>
+        <Text style={styles.orderTotal}>
+          ETB{item.total?.toFixed(2) || '0.00'}
+        </Text>
       </View>
-      
+
       <Text style={styles.itemsCount}>
-        {item.items?.length || 0} item{(item.items?.length || 0) !== 1 ? 's' : ''}
+        {item.items?.length || 0} item
+        {(item.items?.length || 0) !== 1 ? 's' : ''}
       </Text>
     </View>
   );
@@ -256,9 +258,6 @@ function OrdersScreen() {
   );
 }
 
-// ============================================
-// CUSTOMERS SCREEN COMPONENT
-// ============================================
 function CustomersScreen() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -287,7 +286,7 @@ function CustomersScreen() {
           {item.name?.charAt(0)?.toUpperCase() || 'C'}
         </Text>
       </View>
-      
+
       <View style={styles.customerInfo}>
         <Text style={styles.customerName}>{item.name}</Text>
         <Text style={styles.customerEmail}>{item.email}</Text>
@@ -321,9 +320,6 @@ function CustomersScreen() {
   );
 }
 
-// ============================================
-// NOTIFICATIONS SCREEN COMPONENT
-// ============================================
 function NotificationsScreen({ notifications: propNotifications, onMarkAsRead }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -347,7 +343,7 @@ function NotificationsScreen({ notifications: propNotifications, onMarkAsRead })
   }, []);
 
   const handleMarkAsRead = (id) => {
-    const updatedNotifications = notifications.map(notif => 
+    const updatedNotifications = notifications.map(notif =>
       notif._id === id ? { ...notif, read: true } : notif
     );
     setNotifications(updatedNotifications);
@@ -360,21 +356,21 @@ function NotificationsScreen({ notifications: propNotifications, onMarkAsRead })
       'Are you sure you want to mark all as read?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Clear All', 
+        {
+          text: 'Clear All',
           style: 'destructive',
           onPress: async () => {
             try {
               await markAllNotificationsAsRead();
-              const cleared = notifications.map(notif => ({ ...notif, read: true }));
-              setNotifications(cleared);
-              if (onMarkAsRead) onMarkAsRead(cleared);
-            } catch (error) {
-              const cleared = notifications.map(notif => ({ ...notif, read: true }));
+            } finally {
+              const cleared = notifications.map(notif => ({
+                ...notif,
+                read: true,
+              }));
               setNotifications(cleared);
               if (onMarkAsRead) onMarkAsRead(cleared);
             }
-          }
+          },
         },
       ]
     );
@@ -386,22 +382,31 @@ function NotificationsScreen({ notifications: propNotifications, onMarkAsRead })
       onPress={() => handleMarkAsRead(item._id)}
     >
       <Text style={styles.notificationIcon}>
-        {item.type === 'order' ? '🛒' : item.type === 'stock' ? '📦' : '🔔'}
+        {item.type === 'order'
+          ? '🛒'
+          : item.type === 'stock'
+          ? '📦'
+          : '🔔'}
       </Text>
-      
+
       <View style={styles.notificationContent}>
         <View style={styles.notificationHeader}>
-          <Text style={[styles.notificationTitle, !item.read && styles.unreadTitle]}>
+          <Text
+            style={[
+              styles.notificationTitle,
+              !item.read && styles.unreadTitle,
+            ]}
+          >
             {item.title}
           </Text>
-          <Text style={styles.notificationTime}>{item.time || 'Just now'}</Text>
+          <Text style={styles.notificationTime}>
+            {item.time || 'Just now'}
+          </Text>
         </View>
-        
+
         <Text style={styles.notificationMessage}>{item.message}</Text>
-        
-        {!item.read && (
-          <View style={styles.unreadIndicator} />
-        )}
+
+        {!item.read && <View style={styles.unreadIndicator} />}
       </View>
     </TouchableOpacity>
   );
@@ -426,7 +431,7 @@ function NotificationsScreen({ notifications: propNotifications, onMarkAsRead })
           </TouchableOpacity>
         )}
       </View>
-      
+
       <FlatList
         data={notifications}
         renderItem={renderNotificationItem}
@@ -442,9 +447,6 @@ function NotificationsScreen({ notifications: propNotifications, onMarkAsRead })
   );
 }
 
-// ============================================
-// MAIN APP COMPONENT
-// ============================================
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('login');
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -479,16 +481,17 @@ export default function App() {
       case 'customers':
         return <CustomersScreen />;
       case 'notifications':
-        return <NotificationsScreen 
-          notifications={notifications} 
-          onMarkAsRead={setNotifications} 
-        />;
+        return (
+          <NotificationsScreen
+            notifications={notifications}
+            onMarkAsRead={setNotifications}
+          />
+        );
       default:
         return <ProductsScreen />;
     }
   };
 
-  // Side Drawer Component
   const Drawer = () => {
     if (!drawerOpen || currentScreen === 'login') return null;
 
@@ -528,10 +531,13 @@ export default function App() {
               >
                 <Text style={styles.menuItemIcon}>{item.icon}</Text>
                 <View style={styles.menuItemContent}>
-                  <Text style={[
-                    styles.menuItemLabel,
-                    currentScreen === item.screen && styles.activeMenuItemLabel,
-                  ]}>
+                  <Text
+                    style={[
+                      styles.menuItemLabel,
+                      currentScreen === item.screen &&
+                        styles.activeMenuItemLabel,
+                    ]}
+                  >
                     {item.label}
                   </Text>
                   {item.screen === 'notifications' && unreadCount > 0 && (
@@ -553,7 +559,6 @@ export default function App() {
     );
   };
 
-  // Header Component
   const Header = () => {
     if (currentScreen === 'login') return null;
 
@@ -609,9 +614,6 @@ export default function App() {
   );
 }
 
-// ============================================
-// STYLES
-// ============================================
 const styles = StyleSheet.create({
   container: {
     flex: 1,
