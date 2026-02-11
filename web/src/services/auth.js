@@ -1,4 +1,4 @@
-const API_URL = 'http://192.168.1.3:5000/api';
+const API_URL = 'https://order-management-1-9jl1.onrender.com/api';
 
 export const authService = {
   
